@@ -12,7 +12,7 @@ Lo=L;                               % taille totale (en m) du WRP. Ce paramètre 
 
 
 dwrp_slm=4*Lo*L/(lambda*h); %distance entre le plan du WRP et le plan du SLM (Equation 5.20 p.173 du livre anglais).
-pixel_WRP = 960;
+pixel_WRP = 480;
 dob_wrp=dwrp_slm *  pixel_WRP/ (h - pixel_WRP) ;   % selon le figure de methode WRP            
 
 

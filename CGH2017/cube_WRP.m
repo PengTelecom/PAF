@@ -32,10 +32,10 @@ alpha = d/N;
 alpha_z = w/N;
 R=-R;  %pour observer le cube en bonne profondeur (laisser R renvoie une profondeur inversee)
 pas_pixel = 8e-06;
-% pas_reseau = alpha*pas_pixel;    	%on prend des multiples du pas car on pense que a§a reduit les probla¨me d'echantillonnage, dans la pratique la difference est minime.
-% pas_reseau_z = alpha_z*pas_pixel;	%idem	
-pas_reseau = pas_pixel;    	%on prend des multiples du pas car on pense que a§a reduit les probla¨me d'echantillonnage, dans la pratique la difference est minime.
-pas_reseau_z = pas_pixel;
+pas_reseau = alpha*pas_pixel;    	%on prend des multiples du pas car on pense que a§a reduit les probla¨me d'echantillonnage, dans la pratique la difference est minime.
+pas_reseau_z = alpha_z*pas_pixel;	%idem	
+% pas_reseau = pas_pixel;    	%on prend des multiples du pas car on pense que a§a reduit les probla¨me d'echantillonnage, dans la pratique la difference est minime.
+% pas_reseau_z = pas_pixel;
 largeur_WRP = pixel_WRP;
 
 
