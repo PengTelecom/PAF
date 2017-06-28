@@ -12,11 +12,11 @@ Lo=L;                               % taille totale (en m) du WRP. Ce paramètre 
 
 
 dwrp_slm=4*Lo*L/(lambda*h); %distance entre le plan du WRP et le plan du SLM (Equation 5.20 p.173 du livre anglais).
-pixel_WRP = 480;
+pixel_WRP = 640;
 dob_wrp=dwrp_slm *  pixel_WRP/ (h - pixel_WRP) ;   % selon le figure de methode WRP            
 
 
-WRP = cube_WRP(dob_wrp,800,0.6,24000,0,0,30,0,0,0,pixel_WRP);
+WRP = cube_WRP(dob_wrp,800,1,24000,0,0,30,0,0,0,pixel_WRP);
 
 WRPpadding = zeros(1080,1080); %on ajoute 0 padding(ou padding de l'intensite a0 par ones(1080,1080))
 WRPpadding((1080-pixel_WRP)/2+1:(1080+pixel_WRP)/2, (1080-pixel_WRP)/2+1:(1080+pixel_WRP)/2) = WRP;

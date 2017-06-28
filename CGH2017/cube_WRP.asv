@@ -4,7 +4,7 @@
 %%folder' qui contient le fichier holocube
 
 %Version "standard" la plus avancée
-%Pour obtenir un cube de référence, avec des paramètres intéressants, utiliser : holocubeV14(0.5,770,0.6,24000,0,0,30,0,0,0,1080).
+%Pour obtenir un cube de référence, avec des paramètres intéressants, utiliser : cube_WRP(0.5,770,0.6,24000,0,0,30,0,0,0,1080).
 
 function [ image ] = cube_WRP(R,d,v,w,x0,y0,a0,j,na,ma,pixel_WRP)
 
@@ -14,7 +14,7 @@ function [ image ] = cube_WRP(R,d,v,w,x0,y0,a0,j,na,ma,pixel_WRP)
 %%    d : taille de l'image en pixel.
 %%    v : densit?lumineuse.
 %%    w : profondeur de l'objet.
-%%    x0 : abscise du centr5,6e de l'objet.
+%%    x0 : abscise du centre de l'objet.
 %%    y0 : origine du centre de l'objet.
 %%    a0 : amplitude de l'onde plane, sa valeur dépend du nombre de points choisi
 %%    j : paramètre permettant de déphaser linéairement la figure d'interférence.
@@ -32,15 +32,14 @@ alpha = d/N;
 alpha_z = w/N;
 R=-R;  %pour observer le cube en bonne profondeur (laisser R renvoie une profondeur inversee)
 pas_pixel = 8e-06;
-% pas_reseau = alpha*pas_pixel;    	%on prend des multiples du pas car on pense que a§a reduit les probla¨me d'echantillonnage, dans la pratique la difference est minime.
-% pas_reseau_z = alpha_z*pas_pixel;	%idem	
-pas_reseau = pas_pixel;    	%on prend des multiples du pas car on pense que a§a reduit les probla¨me d'echantillonnage, dans la pratique la difference est minime.
-pas_reseau_z = pas_pixel;
+pas_reseau = alpha*pas_pixel;    	%on prend des multiples du pas car on pense que a§a reduit les probla¨me d'echantillonnage, dans la pratique la difference est minime.
+pas_reseau_z = alpha_z*pas_pixel;	%idem	
+
 largeur_WRP = pixel_WRP;
 
 
 tic;   %toc en bas du code pour avoir le temps de calcul
-[X, Y] = meshgrid(pas_pixel*[-largeur_WRP/2.:largeur_WRP/2.-1], pas_pixel*[-largeur_WRP/2.:largeur_WRP/2.-1]);    %Representation mathematique de la matrice SLM
+[X, Y] = meshgrid(pas_pixel*[-largeur_WRP/2.:largeur_WRP/2.-1], pas_pixel*[-largeur_WRP/2.:largeur_WRP/2.-1]);    %Representation mathematique de la matrice WRP
 
 amplitude = zeros(largeur_WRP, largeur_WRP);   %la matrice qui portera la figure de diffraction , initialisee a?0. On ajoute l'onde plane plus tard (en fin de programme) car cela diminue l'effet d'aliasing (empirique).
 amplitude_tampon = zeros(largeur_WRP,largeur_WRP);  %sert a?diminuer les manipulations sur la matrice amplitude. On fait les additions pour chaque element du cube individuellement dans cette matrice puis on additionne a?amplitude apra¨s avoir appliquer le masque ad hoc.
@@ -60,13 +59,13 @@ yd=y0*pas_reseau/pas_pixel;
 %l'horizontale, y a la verticale et, z en profondeur.
 
 for m=-N/2:1:N/2   %on calcule point par point la figure d'interference
-	scalkrp1=(((x0+m)*pas_reseau*X + (y0+(-N/2))*pas_reseau*Y  + (N/2)*pas_reseau_z*R)./r*k);     %arete avant, horizontale basse
-	scalkrp2=(((x0+m)*pas_reseau*X + (y0+(N/2))*pas_reseau*Y + (N/2)*pas_reseau_z*R)./r*k); 		%arete avant, horizontale haute
+	scalkrp1=(sqrt(((x0+m)*pas_reseau-X).^2 + ((y0+(-N/2))*pas_reseau-Y ).^2 + ((N/2)*pas_reseau_z-R)^2).*k);     %arete avant, horizontale basse
+	scalkrp2=(sqrt(((x0+m)*pas_reseau-X).^2 + ((y0+(N/2))*pas_reseau-Y).^2 + ((N/2)*pas_reseau_z-R)^2).*k); 		%arete avant, horizontale haute
 	amplitude = amplitude +  a.*exp(-1i*scalkrp1) + a.*exp(-1i*scalkrp2);            %on ajoute a?la matrice amplitude les figures d'interference de tous les points de ces deux aretes
 end;
 for m=-N/2:1:N/2
-	scalkrp1=(((x0+(-N/2))*pas_reseau*X  + (y0+m)*pas_reseau*Y  + (N/2)*pas_reseau_z*R)./r*k);    %arete avant, verticale gauche
-	scalkrp2=(((x0+(N/2))*pas_reseau*X + (y0+m)*pas_reseau*Y + (N/2)*pas_reseau_z*R)./r*k);        %arete avant verticale droite
+	scalkrp1=(sqrt(((x0+(-N/2))*pas_reseau-X).^2  + ((y0+m)*pas_reseau-Y).^2  + ((N/2)*pas_reseau_z-R)^2).*k);    %arete avant, verticale gauche
+	scalkrp2=(sqrt(((x0+(N/2))*pas_reseau-X).^2 + ((y0+m)*pas_reseau-Y).^2 + ((N/2)*pas_reseau_z-R)^2).*k);        %arete avant verticale droite
 	amplitude = amplitude +  a.*exp(-1i*scalkrp1) + a.*exp(-1i*scalkrp2);
 end;
 
@@ -80,7 +79,7 @@ end;
 
 amplitude_tampon(1:largeur_WRP,1:largeur_WRP) = 0;   %on initialise la matrice tampon.
 for m=-N/2:1:N/2
-	scalkrp1=(((x0+(-N/2))*pas_reseau*X + (y0+(-N/2))*pas_reseau*Y  + m*pas_reseau_z*R)./r*k);    %arete dessous, profondeur, gauche.
+	scalkrp1=((((x0+(-N/2))*pas_reseau-X).^2 + ((y0+(-N/2))*pas_reseau-Y).^2  + (m*pas_reseau_z-R).^2)./r*k);    %arete dessous, profondeur, gauche.
 	M = a.*exp(-1i*scalkrp1);
 	amplitude_tampon = amplitude_tampon + M;    %la matrice tampon est remplie avec les figures d'interference des points de cette arete
 end;
@@ -91,7 +90,7 @@ amplitude = amplitude + amplitude_tampon; %on somme la figure d'interference de 
 
 amplitude_tampon(1:largeur_WRP,1:largeur_WRP) = 0;  %on initialise la matrice tampon
 for m=-N/2:1:N/2
-	scalkrp2=(((x0+(N/2))*pas_reseau*X + (y0+(-N/2))*pas_reseau*Y + m*pas_reseau_z*R)./r*k);    %arete dessous, profondeur, droite
+	scalkrp2=((((x0+(N/2))*pas_reseau-X).^2 + ((y0+(-N/2))*pas_reseau-Y).^2 + (m*pas_reseau_z-R).^2)./r*k);    %arete dessous, profondeur, droite
 	M = a.*exp(-1i*scalkrp2);
 	amplitude_tampon = amplitude_tampon + M;
 end;
@@ -101,7 +100,7 @@ amplitude = amplitude + amplitude_tampon;
 
 amplitude_tampon(1:largeur_WRP,1:largeur_WRP) = 0;
 for m=-N/2:1:N/2
-	scalkrp1=(((x0+(-N/2))*pas_reseau*X + (y0+(N/2))*pas_reseau*Y  + m*pas_reseau_z*R)./r*k);   %arete en profondeur, haute gauche
+	scalkrp1=((((x0+(-N/2))*pas_reseau-X).^2 + ((y0+(N/2))*pas_reseau-Y).^2  + (m*pas_reseau_z-R).^2)./r*k);   %arete en profondeur, haute gauche
 	M = a.*exp(-1i*scalkrp1) ;
 	amplitude_tampon = amplitude_tampon + M;
 end;
@@ -111,7 +110,7 @@ amplitude = amplitude + amplitude_tampon;
 
 amplitude_tampon(1:largeur_WRP,1:largeur_WRP) = 0;
 for m=-N/2:1:N/2
-	scalkrp2=(((x0+(N/2))*pas_reseau*X + (y0+(N/2))*pas_reseau*Y + m*pas_reseau_z*R)./r*k);   %arete en profondeur haut droite
+	scalkrp2=((((x0+(N/2))*pas_reseau-X).^2 + ((y0+(N/2))*pas_reseau-Y).^2 + (m*pas_reseau_z-R).^2)./r*k);   %arete en profondeur haut droite
 	M = a.*exp(-1i*scalkrp2);
 	amplitude_tampon = amplitude_tampon + M;
 end;
@@ -121,7 +120,7 @@ amplitude = amplitude + amplitude_tampon;
 
 amplitude_tampon(1:largeur_WRP,1:largeur_WRP) = 0; %idem
 for m=-N/2:1:N/2
-	scalkrp=(((x0+m)*pas_reseau*X + (y0+(N/2))*pas_reseau*Y  + (-N/2)*pas_reseau_z*R)./r*k);  % arete horizontale haute arriere
+	scalkrp=((((x0+m)*pas_reseau-X).^2 + ((y0+(N/2))*pas_reseau-Y).^2  + ((-N/2)*pas_reseau_z-R).^2)./r*k);  % arete horizontale haute arriere
 	M = a.*exp(-1i*scalkrp);
 	amplitude_tampon = amplitude_tampon + M;
 end;
@@ -131,7 +130,7 @@ amplitude = amplitude + amplitude_tampon;
 
 amplitude_tampon(1:largeur_WRP,1:largeur_WRP) = 0;
 for m=-N/2-1:1:N/2+1
-	scalkrp=(((x0+m)*pas_reseau*X  + (y0+(-N/2))*pas_reseau*Y  + (-N/2)*pas_reseau_z*R)./r*k);   % arete horizontale basse arriere
+	scalkrp=(sqrt(((x0+m)*pas_reseau-X).^2  + ((y0+(-N/2))*pas_reseau-Y).^2  + ((-N/2)*pas_reseau_z-R).^2)./r*k);   % arete horizontale basse arriere
 	M = a.*exp(-1i*scalkrp);
 	amplitude_tampon = amplitude_tampon + M;
 end;
@@ -141,7 +140,7 @@ amplitude = amplitude + amplitude_tampon;
 
 amplitude_tampon(1:largeur_WRP,1:largeur_WRP) = 0;
  for m=-N/2:1:N/2
-	scalkrp=(((x0+(-N/2))*pas_reseau*X + (y0+m)*pas_reseau*Y  + (-N/2)*pas_reseau_z*R)./r*k);    %arete verticale gauche arriere
+	scalkrp=(sqrt((((x0+(-N/2))*pas_reseau-X).^2 + ((y0+m)*pas_reseau-Y).^2  + ((-N/2)*pas_reseau_z-R)).^2)*k);    %arete verticale gauche arriere
 	M = a.*exp(-1i*scalkrp);
 	amplitude_tampon = amplitude_tampon + M;
 end;
@@ -151,7 +150,7 @@ amplitude = amplitude + amplitude_tampon;
 
 amplitude_tampon(1:largeur_WRP,1:largeur_WRP/2) = 0;
 for m=-N/2:1:N/2
-	scalkrp=(((x0+(N/2))*pas_reseau*X + (y0+m)*pas_reseau*Y  + (-N/2)*pas_reseau_z*R)./r*k);    %arete verticale droite arriere
+	scalkrp=(sqrt((((x0+(N/2))*pas_reseau-X).^2 + ((y0+m)*pas_reseau-Y).^2  + ((-N/2)*pas_reseau_z-R).^2))*k);    %arete verticale droite arriere
 	M = a.*exp(-1i*scalkrp);
 	amplitude_tampon = amplitude_tampon + M;
 end;
